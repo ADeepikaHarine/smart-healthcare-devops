@@ -32,6 +32,7 @@ jobs:
   build-and-push:
     needs: lint-test
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -45,17 +46,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
 
-      - name: Build & push backend image
-        run: |
-          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/$REPO/backend:${{ github.sha }} services/backend
-          docker push ghcr.io/$REPO/backend:${{ github.sha }}
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/backend
+          push: true
+          tags: ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
 
-      - name: Build & push frontend image
-        run: |
-          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/$REPO/frontend:${{ github.sha }} services/frontend
-          docker push ghcr.io/$REPO/frontend:${{ github.sha }}
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/frontend
+          push: true
+          tags: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
 
       - name: Set image tags output
         run: echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_OUTPUT
