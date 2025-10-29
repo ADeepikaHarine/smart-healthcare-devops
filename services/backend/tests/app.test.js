@@ -1,18 +1,20 @@
 const request = require('supertest');
 const app = require('../index');
 
-describe('appointments API', () => {
-  it('GET /health', async () => {
+describe('Appointments API Tests', () => {
+  it('should return health status', async () => {
     const res = await request(app).get('/health');
     expect(res.statusCode).toBe(200);
     expect(res.body.status).toBe('ok');
   });
-  it('POST & GET appointments', async () => {
-    const payload = { patientName: 'A', time: '2025-10-30T10:00:00' };
-    const post = await request(app).post('/appointments').send(payload);
-    expect(post.statusCode).toBe(201);
-    const get = await request(app).get('/appointments');
-    expect(Array.isArray(get.body)).toBe(true);
-    expect(get.body.length).toBeGreaterThanOrEqual(1);
+
+  it('should create and fetch appointments', async () => {
+    const payload = { patientName: 'Deepika', time: '2025-10-30T10:00' };
+    const postRes = await request(app).post('/appointments').send(payload);
+    expect(postRes.statusCode).toBe(201);
+
+    const getRes = await request(app).get('/appointments');
+    expect(Array.isArray(getRes.body)).toBe(true);
+    expect(getRes.body.length).toBeGreaterThan(0);
   });
 });

@@ -1,0 +1,25 @@
+- name: Deploy Smart Healthcare app to AKS
+  hosts: localhost
+  connection: local
+  vars:
+    k8s_dir: "./k8s"
+  tasks:
+    - name: Ensure manifests directory exists
+      stat:
+        path: "{{ k8s_dir }}"
+      register: k8sdir
+
+    - name: Apply Kubernetes manifests
+      command: kubectl apply -f {{ k8s_dir }}/
+      when: k8sdir.stat.exists
+      register: kubectl_apply
+      changed_when: "'configured' in kubectl_apply.stdout or 'created' in kubectl_apply.stdout"
+
+    - name: Show kubectl apply output
+      debug:
+        var: kubectl_apply.stdout_lines
+
+    - name: Wait for backend rollout
+      command: kubectl rollout status deployment/backend --timeout=120s
+      register: rollout
+      failed_when: rollout.rc != 0
